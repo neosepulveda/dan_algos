@@ -3,15 +3,17 @@ require_relative 'xml_parser'
 
 class BarrelOfMonkeys
 
-  LIBRARY = [
-    "Peace Train",
-    "No More I Love You's",
-    "Super Trooper",
-    "Rock Me, Amadeus",
-    "Song of the South",
-    "Hooked on a Feeling",
-    "Go Tell it on the Mountain",
-  ]
+  LIBRARY = {
+    "p" => [ OpenStruct.new(id: 1, name: "Peace Train", artist: "Artist1", duration: 12000) ],
+    "n" => [ OpenStruct.new(id: 2, name: "No More I Love You's", artist: "Artist2", duration: 12000) ],
+    "s" => [
+              OpenStruct.new(id: 3, name: "Super Trooper", artist: "Artist3", duration: 12000),
+              OpenStruct.new(id: 5, name: "Song Of The South", artist: "Artist5", duration: 12000)
+           ],
+    "r" => [ OpenStruct.new(id: 4, name: "Rock Me, Amadeus", artist: "Artist4", duration: 12000) ],
+    "h" => [ OpenStruct.new(id: 6, name: "Hooked On A Feeling", artist: "Artist6", duration: 12000) ],
+    "g" => [ OpenStruct.new(id: 7, name: "Go Tell It On The Mountain", artist: "Artist7", duration: 12000) ],
+  }
 
   @playlists = []
 
@@ -26,10 +28,12 @@ class BarrelOfMonkeys
       @playlists << playlist
     else
       chainable_songs.each do |s|
-        library_aux = library.dup
+        library_aux = Marshal.load(Marshal.dump(library))
+        #library_aux = library.dup
         library_aux[s.name[0].downcase].delete(s)
 
-        playlist_aux = playlist.dup
+        playlist_aux = Marshal.load(Marshal.dump(playlist))
+        #playlist_aux = playlist.dup
         playlist_aux = playlist_aux << s
         create_playlist_recursive(playlist_aux, library_aux, ending_song)
       end
@@ -37,10 +41,11 @@ class BarrelOfMonkeys
   end
 
   def self.create_playlist(starting_song, ending_song, library)
-    library_aux = library.dup
+    library_aux = Marshal.load(Marshal.dump(library))
+    #library_aux = library.dup
     s_song = library_aux[starting_song[0].downcase].find { |s| s.name == starting_song }
     e_song = library_aux[ending_song[0].downcase].find { |s| s.name == ending_song }
-    library_aux[starting_song[0].downcase].delete(starting_song)
+    library_aux[starting_song[0].downcase].delete(s_song)
     create_playlist_recursive([s_song], library_aux, e_song)
   end
 
@@ -81,4 +86,4 @@ class BarrelOfMonkeys
   end
 end
 
-BarrelOfMonkeys.main(ARGV[0], ARGV[1], XmlParser.to_hash(ARGV[2]))
+#BarrelOfMonkeys.main(ARGV[0], ARGV[1], XmlParser.to_hash(ARGV[2]))
