@@ -58,7 +58,11 @@ class BarrelOfMonkeys
 
   def self.print_playlists
     puts "\n\Playlists\n"
-    puts @playlists.inspect
+    @playlists.each_with_index { |playlist, i| print_playlist(playlist, i) }
+  end
+
+  def self.print_playlist(playlist, i)
+    puts "Playlist ##{i}: #{playlist.map(&:name).join(" > ")}\n\n"
   end
 
   def self.main(starting_song, ending_song, library)
