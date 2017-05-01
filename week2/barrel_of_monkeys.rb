@@ -12,20 +12,18 @@
 @ending_song = ARGV[1]
 
 def create_playlist(playlist, library)
-  if library.empty?
-    return playlist
+  chainable_songs = get_chainable_songs(playlist.last, library)
+  if playlist.last == @ending_song
+    puts "#{playlist.join(' > ')}"
   else
-    get_chainable_songs(playlist.last, library).each do |s|
+    chainable_songs.each do |s|
       library_aux = library.dup
       library_aux.delete(s)
 
       playlist_aux = playlist.dup
       playlist_aux = playlist_aux << s
 
-      #puts "Library Aux: #{library_aux}"
-      #puts "Playlist Aux: #{playlist_aux}"
-
-      return create_playlist(playlist_aux, library_aux)
+      create_playlist(playlist_aux, library_aux)
     end
   end
 end
@@ -55,7 +53,7 @@ def main_algo(starting_song, ending_song, library)
     library_aux = library.dup
     library_aux.delete(starting_song)
     puts "\n\Playlist\n"
-    puts create_playlist([starting_song], library_aux).join(' > ')
+    create_playlist([starting_song], library_aux)
   end
 end
 
