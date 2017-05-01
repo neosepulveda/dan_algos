@@ -1,3 +1,6 @@
+require 'pry'
+require_relative 'xml_parser'
+
 class BarrelOfMonkeys
 
   LIBRARY = [
@@ -17,17 +20,17 @@ class BarrelOfMonkeys
   end
 
   def self.create_playlist_recursive(playlist, library, ending_song)
+    #puts "PLaylistAux: #{playlist.map(&:name).join(" > ")}"
     chainable_songs = get_chainable_songs(playlist.last, library)
     if playlist.last == ending_song
       @playlists << playlist
     else
       chainable_songs.each do |s|
         library_aux = library.dup
-        library_aux.delete(s)
+        library_aux[s.name[0].downcase].delete(s)
 
         playlist_aux = playlist.dup
         playlist_aux = playlist_aux << s
-
         create_playlist_recursive(playlist_aux, library_aux, ending_song)
       end
     end
@@ -35,20 +38,22 @@ class BarrelOfMonkeys
 
   def self.create_playlist(starting_song, ending_song, library)
     library_aux = library.dup
-    library_aux.delete(starting_song)
-    create_playlist_recursive([starting_song], library_aux, ending_song)
+    s_song = library_aux[starting_song[0].downcase].find { |s| s.name == starting_song }
+    e_song = library_aux[ending_song[0].downcase].find { |s| s.name == ending_song }
+    library_aux[starting_song[0].downcase].delete(starting_song)
+    create_playlist_recursive([s_song], library_aux, e_song)
   end
 
   def self.get_chainable_songs(song, library)
-    library.select { |s| chainable_songs?(song, s) }
-  end
-
-  def self.chainable_songs?(s_song, e_song)
-    s_song.downcase[-1] == e_song.downcase[0]
+    library[song.name[-1]]
   end
 
   def self.existing_song?(song, library)
-    library.include?(song)
+    all_songs(library).include?(song)
+  end
+
+  def self.all_songs(library)
+    @all_songs ||= library.values.flatten.map(&:name)
   end
 
   def self.print_playlists
@@ -61,9 +66,9 @@ class BarrelOfMonkeys
     puts "Ending Song: #{ending_song}"
 
     if !existing_song?(starting_song, library)
-      puts "#{starting_song} that not exists in our library"
+      puts "#{starting_song} does not exists in our library"
     elsif !existing_song?(ending_song, library)
-      puts "#{ending_song} that not exists in our library"
+      puts "#{ending_song} does not exists in our library"
     else
       create_playlist(starting_song, ending_song, library)
       print_playlists
@@ -72,4 +77,4 @@ class BarrelOfMonkeys
   end
 end
 
-BarrelOfMonkeys.main(ARGV[0], ARGV[1], BarrelOfMonkeys::LIBRARY)
+BarrelOfMonkeys.main(ARGV[0], ARGV[1], XmlParser.to_hash(ARGV[2]))
