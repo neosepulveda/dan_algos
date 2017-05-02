@@ -22,18 +22,16 @@ class BarrelOfMonkeys
   end
 
   def self.create_playlist_recursive(playlist, library, ending_song)
-    #puts "PLaylistAux: #{playlist.map(&:name).join(" > ")}"
     chainable_songs = get_chainable_songs(playlist.last, library)
     if playlist.last == ending_song
+      puts "Match found."
       @playlists << playlist
     else
       chainable_songs.each do |s|
         library_aux = Marshal.load(Marshal.dump(library))
-        #library_aux = library.dup
         library_aux[s.name[0].downcase].delete(s)
 
         playlist_aux = Marshal.load(Marshal.dump(playlist))
-        #playlist_aux = playlist.dup
         playlist_aux = playlist_aux << s
         create_playlist_recursive(playlist_aux, library_aux, ending_song)
       end
@@ -42,7 +40,6 @@ class BarrelOfMonkeys
 
   def self.create_playlist(starting_song, ending_song, library)
     library_aux = Marshal.load(Marshal.dump(library))
-    #library_aux = library.dup
     s_song = library_aux[starting_song[0].downcase].find { |s| s.name == starting_song }
     e_song = library_aux[ending_song[0].downcase].find { |s| s.name == ending_song }
     library_aux[starting_song[0].downcase].delete(s_song)
