@@ -50,7 +50,7 @@ class BarrelOfMonkeys
   end
 
   def self.get_chainable_songs(song, library)
-    library[song.name[-1]]
+    library[song.name[-1]] || []
   end
 
   def self.existing_song?(song, library)
@@ -86,4 +86,4 @@ class BarrelOfMonkeys
   end
 end
 
-#BarrelOfMonkeys.main(ARGV[0], ARGV[1], XmlParser.to_hash(ARGV[2]))
+BarrelOfMonkeys.main(ARGV[0], ARGV[1], XmlParser.to_hash(ARGV[2]))

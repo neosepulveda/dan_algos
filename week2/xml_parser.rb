@@ -5,13 +5,16 @@ require 'pry'
 class XmlParser
 
   def self.to_hash(xml_file)
-    library = Hash.new { |h, k| h[k] = [] }
+    library = {}
     doc = read_xml(xml_file)
     doc.xpath("//Artist").each do |xml_artist|
       artist_name = xml_artist.attributes["name"].value
       xml_artist.children.each do |xml_song|
         if xml_song.class == Nokogiri::XML::Element
           song = parse_song(xml_song, artist_name)
+          if library[song.name[0].downcase].nil?
+            library[song.name[0].downcase] = []
+          end
           library[song.name[0].downcase] << song
         end
       end
