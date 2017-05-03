@@ -16,34 +16,43 @@ class BarrelOfMonkeys
   }
 
   @playlists = []
+  @stop = false
 
   def self.reset_playlists
     @playlists = []
   end
 
-  def self.create_playlist_recursive(playlist, library, ending_song)
+  def self.create_playlist_recursive(playlist, playlist_duration, library, ending_song, minutes_to_fill_slot)
     chainable_songs = get_chainable_songs(playlist.last, library)
     if playlist.last == ending_song
-      puts "Match found."
+      @stop = true
       @playlists << playlist
+    elsif @stop == true
+      #DO NOTHING AND STOP RECURSION
     else
       chainable_songs.each do |s|
-        library_aux = Marshal.load(Marshal.dump(library))
-        library_aux[s.name[0].downcase].delete(s)
+        if (playlist_duration + s.duration) <= minutes_to_fill_slot
+          library_aux = Marshal.load(Marshal.dump(library))
+          library_aux[s.name[0].downcase].delete(s)
 
-        playlist_aux = Marshal.load(Marshal.dump(playlist))
-        playlist_aux = playlist_aux << s
-        create_playlist_recursive(playlist_aux, library_aux, ending_song)
+          playlist_aux = Marshal.load(Marshal.dump(playlist))
+          playlist_aux = playlist_aux << s
+
+          playlist_duration_aux = playlist_duration
+          playlist_duration_aux += s.duration
+
+          create_playlist_recursive(playlist_aux, playlist_duration_aux, library_aux, ending_song, minutes_to_fill_slot)
+        end
       end
     end
   end
 
-  def self.create_playlist(starting_song, ending_song, library)
+  def self.create_playlist(starting_song, ending_song, library, minutes_to_fill_slot)
     library_aux = Marshal.load(Marshal.dump(library))
     s_song = library_aux[starting_song[0].downcase].find { |s| s.name == starting_song }
     e_song = library_aux[ending_song[0].downcase].find { |s| s.name == ending_song }
     library_aux[starting_song[0].downcase].delete(s_song)
-    create_playlist_recursive([s_song], library_aux, e_song)
+    create_playlist_recursive([s_song], s_song.duration, library_aux, e_song, minutes_to_fill_slot)
   end
 
   def self.get_chainable_songs(song, library)
@@ -67,7 +76,7 @@ class BarrelOfMonkeys
     puts "Playlist ##{i}: #{playlist.map(&:name).join(" > ")}\n\n"
   end
 
-  def self.main(starting_song, ending_song, library)
+  def self.main(starting_song, ending_song, library, minutes_to_fill_slot)
     puts "Starting Song: #{starting_song}"
     puts "Ending Song: #{ending_song}"
 
@@ -76,11 +85,11 @@ class BarrelOfMonkeys
     elsif !existing_song?(ending_song, library)
       puts "#{ending_song} does not exists in our library"
     else
-      create_playlist(starting_song, ending_song, library)
+      create_playlist(starting_song, ending_song, library, minutes_to_fill_slot)
       print_playlists
     end
     @playlists
   end
 end
 
-BarrelOfMonkeys.main(ARGV[0], ARGV[1], XmlParser.to_hash(ARGV[2]))
+BarrelOfMonkeys.main(ARGV[0], ARGV[1], XmlParser.to_hash(ARGV[2]), ARGV[3].to_i * 1000 * 60)
